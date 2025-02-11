@@ -1,31 +1,29 @@
 name: Test Build
 
 on:
-#  push:
-#    branches:
-#      - main
-#  pull_request:
-  workflow_dispatch:
+  workflow_dispatch:  # 手动触发工作流
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # 使用 Ubuntu 最新环境
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3  # 拉取代码
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # 获取完整的提交历史
+
       - name: Build With Gradle
         run: |
-          chmod +x gradlew
-          ./gradlew assemblerelease --build-cache --parallel --daemon --warning-mode all
+          chmod +x gradlew  # 给 gradlew 文件添加执行权限
+          ./gradlew assembleRelease --build-cache --parallel --daemon --warning-mode all  # 修正构建命令
+
       - name: Prepare App
         run: |
-          mkdir -p ${{ github.workspace }}/apk/
-          for file in `find ~ -name "*.apk" -print`; do
-            mv "$file" ${{ github.workspace }}/apk/
-          done
+          mkdir -p ${{ github.workspace }}/apk/  # 创建一个用于存储 APK 的目录
+          find ${{ github.workspace }} -name "*.apk" -exec mv {} ${{ github.workspace }}/apk/ \;  # 查找并移动所有 APK 文件
+
       - name: Upload App To Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3  # 上传构建好的 APK 到 Artifacts
         with:
-          name: com.github.tvbox.osc
-          path: ${{ github.workspace }}/apk/*
+          name: com.github.tvbox.osc  # 设置工件名称
+          path: ${{ github.workspace }}/apk/*  # 上传 APK 文件
